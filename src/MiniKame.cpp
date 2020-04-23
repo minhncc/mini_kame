@@ -130,8 +130,8 @@ void MiniKame::frontBack(float steps, float T) {
 }
 
 void MiniKame::run(int dir, float steps, float T) {
-  int x_amp = 15;
-  int z_amp = 15;
+  int x_amp = 40; // default 15
+  int z_amp = 20; // default 15
   int ap = 15;
   int hi = 0;
   int front_x = 0;
