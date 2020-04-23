@@ -22,8 +22,8 @@ class MiniKame {
     MiniKame();
     void init();
     void home();
-    void run(int dir = 1, float steps = 1, float T = 550);
-    void walk(int dir = 1, float steps = 1, float T = 550);
+    void run(int dir = 1, float steps = 1, float T = 1050); //default 550
+    void walk(int dir = 1, float steps = 1, float T = 1050); // default 550
     void turnL(float steps = 1, float period = 550);
     void turnR(float steps = 1, float period = 550);
     void omniWalk(bool side = true, float T = 1000, float turn_factor = 1.5);
