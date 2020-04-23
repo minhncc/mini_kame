@@ -31,6 +31,7 @@
 #define MOON_WALK 'm'
 #define FRONT_BACK 't'
 #define HELLO 'h'
+#define REST '0'
 #define WALK_FORWARD '1'
 #define WALK_BACKWARD '2'
 
@@ -100,6 +101,9 @@ boolean gaits(char cmd)
   robot.init();
   switch (cmd)
   {
+  case REST:
+    robot.rest();
+    break;
   case FORWARD:
     robot.run();
     break;
