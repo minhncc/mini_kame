@@ -31,6 +31,8 @@
 #define MOON_WALK 'm'
 #define FRONT_BACK 't'
 #define HELLO 'h'
+#define WALK_FORWARD '1'
+#define WALK_BACKWARD '2'
 
 MiniKame robot;
 
@@ -95,7 +97,7 @@ boolean gaits(char cmd)
   if (prev_cmd == cmd)
     return taken;
 
-  robot.home();
+  robot.init();
   switch (cmd)
   {
   case FORWARD:
@@ -103,6 +105,12 @@ boolean gaits(char cmd)
     break;
   case BACKWARD:
     robot.run(0);
+    break;
+  case WALK_FORWARD:
+    robot.walk();
+    break;
+  case WALK_BACKWARD:
+    robot.walk(0);
     break;
   case RIGHT:
     robot.turnR(1, 550);
