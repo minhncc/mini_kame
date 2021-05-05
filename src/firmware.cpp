@@ -18,22 +18,22 @@
 #define TIME_INTERVAL 5000
 #define SERIAL_DATA_PERIOD 200
 
-#define FORWARD 'f'
-#define LEFT 'l'
-#define STAND 's'
-#define RIGHT 'r'
-#define BACKWARD 'b'
-#define PUSH_UP 'p'
-#define UP_DOWN 'u'
-#define DANCE 'n'
-#define OMNI_WALK_R 'o'
-#define OMNI_WALK_L 'i'
-#define MOON_WALK 'm'
-#define FRONT_BACK 't'
-#define HELLO 'h'
-#define REST '0'
-#define WALK_FORWARD '1'
-#define WALK_BACKWARD '2'
+String FORWARD = "f";
+String LEFT = "l";
+String STAND = "s";
+String RIGHT = "r";
+String BACKWARD = "b";
+String PUSH_UP = "p";
+String UP_DOWN = "u";
+String DANCE = "n";
+String OMNI_WALK_R = "o";
+String OMNI_WALK_L = "i";
+String MOON_WALK = "m";
+String FRONT_BACK = "t";
+String HELLO = "h";
+String REST = "0";
+String WALK_FORWARD = "1";
+String WALK_BACKWARD = "2";
 
 MiniKame robot;
 
@@ -41,8 +41,9 @@ bool auto_mode = false;
 bool random_walk = false;
 bool stopSerial = false;
 unsigned long cur_time, prev_serial_data_time, perv_sensor_time;
-char cmd = STAND;
-char bluetoothCmd = STAND;
+String cmd = STAND;
+char bluetoothRead;
+String bluetoothCmd = "";
 
 jmp_buf jump_env;
 
@@ -90,68 +91,86 @@ void setup()
     cmd = FORWARD;
 }
 
-boolean gaits(char cmd)
+boolean gaits(String cmd)
 {
-  static char prev_cmd = '.';
+  static String prev_cmd = ".";
   bool taken = true;
 
   if (prev_cmd == cmd)
     return taken;
 
-  robot.init();
-  switch (cmd)
+  // robot.init();
+  Serial.println("cmd:" + cmd);
+  Serial.println("prev_cmd:" + prev_cmd);
+  if (cmd == REST)
   {
-  case REST:
     robot.rest();
-    break;
-  case FORWARD:
+  }
+  else if (cmd == FORWARD)
+  {
     robot.run();
-    break;
-  case BACKWARD:
+  }
+  else if (cmd == BACKWARD)
+  {
     robot.run(0);
-    break;
-  case WALK_FORWARD:
+  }
+  else if (cmd == WALK_FORWARD)
+  {
     robot.walk();
-    break;
-  case WALK_BACKWARD:
+  }
+  else if (cmd == WALK_BACKWARD)
+  {
     robot.walk(0);
-    break;
-  case RIGHT:
+  }
+  else if (cmd == RIGHT)
+  {
     robot.turnR(1, 550);
-    break;
-  case LEFT:
+  }
+  else if (cmd == LEFT)
+  {
     robot.turnL(1, 550);
-    break;
-  case STAND:
+  }
+  else if (cmd == STAND)
+  {
     robot.home();
-    break;
-  case PUSH_UP:
+  }
+  else if (cmd == PUSH_UP)
+  {
     robot.pushUp();
-    break;
-  case UP_DOWN:
+  }
+  else if (cmd == UP_DOWN)
+  {
     robot.upDown();
-    break;
-  case HELLO:
+  }
+  else if (cmd == HELLO)
+  {
     robot.hello();
-    break;
-  case MOON_WALK:
+  }
+  else if (cmd == MOON_WALK)
+  {
     robot.moonwalkL();
-    break;
-  case OMNI_WALK_L:
-    robot.omniWalk(false);
-    break;
-  case OMNI_WALK_R:
-    robot.omniWalk();
-    break;
-  case DANCE:
+  }
+  // else if (cmd == OMNI_WALK_L)
+  // {
+  //   robot.omniWalk(false);
+  // }
+  // else if (cmd == OMNI_WALK_R)
+  // {
+  //   robot.omniWalk();
+  // }
+  else if (cmd == DANCE)
+  {
     robot.dance();
-    break;
-  case FRONT_BACK:
-    robot.frontBack();
-    break;
-  default:
+  }
+  // else if (cmd == FRONT_BACK)
+  // {
+  //   robot.frontBack();
+  // }
+  else {
+    cmd = STAND;
     taken = false;
   }
+
   if (taken)
     prev_cmd = cmd;
   return taken;
@@ -162,41 +181,51 @@ boolean checkBluetoothCommand()
   bool rc = false;
   if (Serial.available() > 0)
   {
-    bluetoothCmd = Serial.read();
+    bluetoothRead = Serial.read();
+    bluetoothCmd = bluetoothCmd + bluetoothRead;
 
     rc = true;
 
-    if (!auto_mode) {
-      cmd = bluetoothCmd;
+    // if (!auto_mode && bluetoothRead == '*')
+    if (bluetoothRead == '*')
+    {
+      bluetoothCmd = bluetoothCmd.substring(0, bluetoothCmd.indexOf('*')); // Delete last char *
+      bluetoothCmd.trim();
+      if (bluetoothCmd.length() > 0)
+      {
+        cmd = bluetoothCmd;
+      }
+      bluetoothCmd = "";
     }
   }
 
-  if (auto_mode)
-  {
-    static char movements[] = {FORWARD, LEFT, OMNI_WALK_R, OMNI_WALK_L, RIGHT, BACKWARD, PUSH_UP, UP_DOWN, HELLO, DANCE, FRONT_BACK, MOON_WALK};
-    static unsigned long old_time = cur_time;
-    static int c = 0;
-    if (cur_time - old_time >= TIME_INTERVAL)
-    {
-      old_time = cur_time;
-      //c = (int)random(0, sizeof(movements));
-      // cmd = movements[c];
-      if (!random_walk)
-      {
-        c = c % (sizeof(movements) / sizeof(char));
-        cmd = movements[c++];
-      }
-      else
-      {
-        c = (int)random(0, sizeof(movements) / sizeof(char));
-        cmd = movements[c];
-      }
-    }
-  }
+  // if (auto_mode)
+  // {
+  //   static String *movements[] = {FORWARD, LEFT, OMNI_WALK_R, OMNI_WALK_L, RIGHT, BACKWARD, PUSH_UP, UP_DOWN, HELLO, DANCE, FRONT_BACK, MOON_WALK};
+  //   static unsigned long old_time = cur_time;
+  //   static int c = 0;
+  //   if (cur_time - old_time >= TIME_INTERVAL)
+  //   {
+  //     old_time = cur_time;
+  //     //c = (int)random(0, sizeof(movements));
+  //     // cmd = movements[c];
+  //     if (!random_walk)
+  //     {
+  //       c = c % (sizeof(movements) / sizeof(char));
+  //       cmd = movements[c++];
+  //     }
+  //     else
+  //     {
+  //       c = (int)random(0, sizeof(movements) / sizeof(char));
+  //       cmd = movements[c];
+  //     }
+  //   }
+  // }
   return rc;
 }
 
-void pause(int period) {
+void pause(int period)
+{
   unsigned long timeout = millis() + period;
   do
   {
@@ -252,10 +281,12 @@ long distance_measure()
 }
 #endif
 
-void loop() {
+void loop()
+{
 
   cur_time = millis();
-  if (cur_time - prev_serial_data_time >= 100) {
+  if (cur_time - prev_serial_data_time >= 100)
+  {
     prev_serial_data_time = cur_time;
   }
   checkBluetoothCommand();
