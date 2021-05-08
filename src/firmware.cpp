@@ -18,22 +18,26 @@
 #define TIME_INTERVAL 5000
 #define SERIAL_DATA_PERIOD 200
 
+// Basic moves
 String FORWARD = "f";
 String LEFT = "l";
 String STAND = "s";
 String RIGHT = "r";
 String BACKWARD = "b";
-String PUSH_UP = "p";
-String UP_DOWN = "u";
-String DANCE = "n";
-String OMNI_WALK_R = "o";
-String OMNI_WALK_L = "i";
-String MOON_WALK = "m";
-String FRONT_BACK = "t";
-String HELLO = "h";
-String REST = "0";
-String WALK_FORWARD = "1";
-String WALK_BACKWARD = "2";
+
+// Intermediate moves
+String REST = "1";
+String WALK_FORWARD = "2";
+String WALK_BACKWARD = "3";
+String PUSH_UP = "4";
+String UP_DOWN = "5";
+String DANCE = "6";
+// String OMNI_WALK_R = "7";
+// String OMNI_WALK_L = "8";
+String MOON_WALK = "7";
+// String FRONT_BACK = "8";
+String HELLO = "8";
+String LEG_TEST = "lt";
 
 MiniKame robot;
 
@@ -102,6 +106,18 @@ boolean gaits(String cmd)
   // robot.init();
   Serial.println("cmd:" + cmd);
   Serial.println("prev_cmd:" + prev_cmd);
+  if (cmd.indexOf(LEG_TEST) > -1 && cmd.length() >= (LEG_TEST.length() + 2))
+  {
+    String subParam = cmd.substring(LEG_TEST.length() + 1);
+    int leg = subParam.toInt();
+
+    robot.init();
+    robot.setServo(leg, 20);
+    delay(500);
+    robot.setServo(leg, 90);
+    delay(500);
+    robot.setServo(leg, 160);
+  }
   if (cmd == REST)
   {
     robot.rest();
