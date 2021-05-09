@@ -23,6 +23,7 @@ class MiniKame {
     void init();
     void home();
     void rest();
+    void leveling(int level = 90);
     void run(int dir = 1, float steps = 1, float T = 1050); //default 550
     void walk(int dir = 1, float steps = 1, float T = 1050); // default 550
     void turnL(float steps = 1, float period = 550);

@@ -294,7 +294,15 @@ void MiniKame::pushUp(float steps, float T) {
 void MiniKame::home() {
   int ap = 20;
   int hi = 0;
-  int position[] = {90 + ap, 90 - ap, 90 - hi, 90 + hi, 90 - ap, 90 + ap, 90 + hi, 90 - hi};
+  int position[] = {
+    90 + ap,
+    90 - ap,
+    90 - hi,
+    90 + hi,
+    90 - ap,
+    90 + ap,
+    90 + hi,
+    90 - hi};
   for (int i = 0; i < 8; i++) {
     if (position[i] + trim[i] <= 180 && position[i] + trim[i] > 0) {
       oscillator[i].stop();
@@ -316,6 +324,29 @@ void MiniKame::rest()
     90 + ap,
     5 + hi,
     175 - hi};
+  for (int i = 0; i < 8; i++)
+  {
+    if (position[i] + trim[i] <= 180 && position[i] + trim[i] > 0)
+    {
+      oscillator[i].stop();
+      setServo(i, position[i] + trim[i]);
+    }
+  }
+}
+
+void MiniKame::leveling(int level)
+{
+  int ap = 20;
+  int hi = 0;
+  int position[] = {
+      90 + ap,
+      90 - ap,
+      175 - hi - level,
+      5 + hi + level,
+      90 - ap,
+      90 + ap,
+      5 + hi + level,
+      175 - hi - level};
   for (int i = 0; i < 8; i++)
   {
     if (position[i] + trim[i] <= 180 && position[i] + trim[i] > 0)
