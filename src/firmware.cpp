@@ -4,6 +4,7 @@
 
 //uncomment out below line if you want to use HC_SR04 sensor
 //#define __HC_SR04__
+// #define __DEV__
 
 #ifdef __HC_SR04__
 #define HC_SR04_TRIGGER_PIN A4
@@ -40,14 +41,16 @@
 #define OMNI_WALK_R 17
 #define OMNI_WALK_L 18
 
+#define COMMAND_MAX_SIZE 32
+#define COMMAND_MAX_ARG 3
+
 MiniKame robot;
 
 bool auto_mode = false;
 bool random_walk = false;
 bool stopSerial = false;
 unsigned long cur_time, prev_serial_data_time, perv_sensor_time;
-int cmd = STAND;
-int cmdArgs[3] = {0, 0, 0};
+int cmd[COMMAND_MAX_ARG] = {STAND, 0, 0};
 char bluetoothRead;
 String bluetoothCmd = "";
 
@@ -95,92 +98,126 @@ void setup()
   //robot.hello();
   //robot.jump();
   if (auto_mode)
-    cmd = FORWARD;
+  {
+    memset(cmd, 0, sizeof(cmd));
+    cmd[0] = STAND;
+  }
 }
 
-boolean gaits(int cmd)
+boolean compareCmd(int *cmd1, int *cmd2)
 {
-  static int prev_cmd = 0;
+  for (int i = 0; i < COMMAND_MAX_ARG; i++)
+  {
+    if (cmd1[i] != cmd2[i])
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+void setCmd(int *from_cmd, int *to_cmd)
+{
+  for (int i = 0; i < COMMAND_MAX_ARG; i++)
+  {
+    to_cmd[i] = from_cmd[i];
+  }
+}
+
+boolean gaits(int *cmd)
+{
+  static int prev_cmd[] = {0, 0, 0};
   bool taken = true;
 
-  if (prev_cmd == cmd)
+  if (compareCmd(prev_cmd, cmd))
     return taken;
 
+#ifdef __HC_SR04__
   Serial.print("cmd:");
   Serial.println(cmd);
+  Serial.print("cmdArgs:");
+  Serial.print(cmdArgs[0]);
+  Serial.print(',');
+  Serial.print(cmdArgs[1]);
+  Serial.print(',');
+  Serial.println(cmdArgs[2]);
   Serial.print("prev_cmd:");
   Serial.println(prev_cmd);
   Serial.println("Executing...");
+#endif
   // robot.init();
 
-  switch (cmd)
+  switch (cmd[0])
   {
-    case STAND:
-      robot.home();
-      break;
-    case FORWARD:
-      robot.run();
-      break;
-    case BACKWARD:
-      robot.run(0);
-      break;
-    case LEFT:
-      robot.turnL(1, 550);
-      break;
-    case RIGHT:
-      robot.turnR(1, 550);
-      break;
-    case REST:
-      robot.rest();
-      break;
-    case WALK_FORWARD:
-      robot.walk();
-      break;
-    case WALK_BACKWARD:
-      robot.walk(0);
-      break;
-    case PUSH_UP:
-      robot.pushUp();
-      break;
-    case UP_DOWN:
-      robot.upDown();
-      break;
-    case DANCE:
-      robot.dance();
-      break;
-    case MOON_WALK:
-      robot.moonwalkL();
-      break;
-    case HELLO:
-      robot.hello();
-      break;
-    case LEG_TEST:
-      robot.setServo(cmdArgs[1], 20);
-      delay(800);
-      robot.setServo(cmdArgs[1], 90);
-      delay(800);
-      robot.setServo(cmdArgs[1], 160);
-      break;
-    case LEVELING :
-      robot.leveling(cmdArgs[1]);
-      break;
-    case OMNI_WALK_R:
-      robot.omniWalk();
-      break;
-    case OMNI_WALK_L:
-      robot.omniWalk(false);
-      break;
-    case FRONT_BACK:
-      robot.frontBack();
-      break;
-    default:
-      cmd = STAND;
-      taken = false;
-      break;
-    }
+  case STAND:
+    robot.home();
+    break;
+  case FORWARD:
+    robot.run();
+    break;
+  case BACKWARD:
+    robot.run(0);
+    break;
+  case LEFT:
+    robot.turnL(1, 550);
+    break;
+  case RIGHT:
+    robot.turnR(1, 550);
+    break;
+  case REST:
+    robot.rest();
+    break;
+  case WALK_FORWARD:
+    robot.walk();
+    break;
+  case WALK_BACKWARD:
+    robot.walk(0);
+    break;
+  case PUSH_UP:
+    robot.pushUp();
+    break;
+  case UP_DOWN:
+    robot.upDown();
+    break;
+  case DANCE:
+    robot.dance();
+    break;
+  case MOON_WALK:
+    robot.moonwalkL();
+    break;
+  case HELLO:
+    robot.hello();
+    break;
+  case LEG_TEST:
+    robot.setServo(cmd[1], 20);
+    delay(800);
+    robot.setServo(cmd[1], 90);
+    delay(800);
+    robot.setServo(cmd[1], 160);
+    break;
+  case LEVELING:
+    robot.leveling(cmd[1]);
+    break;
+  case OMNI_WALK_R:
+    robot.omniWalk();
+    break;
+  case OMNI_WALK_L:
+    robot.omniWalk(false);
+    break;
+  case FRONT_BACK:
+    robot.frontBack();
+    break;
+  default:
+    cmd[0] = STAND;
+    cmd[1] = 0;
+    cmd[2] = 0;
+    taken = false;
+    break;
+  }
 
   if (taken)
-    prev_cmd = cmd;
+    setCmd(prev_cmd, cmd);
   return taken;
 }
 
@@ -202,22 +239,29 @@ boolean checkBluetoothCommand()
       bluetoothCmd.trim();
       if (bluetoothCmd.length() > 0)
       {
-        char bluetoothCmdChars[bluetoothCmd.length()];
-        bluetoothCmd.toCharArray(bluetoothCmdChars, bluetoothCmd.length());
+        char bluetoothCmdChars[COMMAND_MAX_SIZE];
+        bluetoothCmd.toCharArray(bluetoothCmdChars, COMMAND_MAX_SIZE);
         if (strchr(bluetoothCmdChars, ',') != NULL)
         {
           int argIdx = 0;
-          char *chuck = strtok(bluetoothCmdChars, ",");
-          while (chuck != 0)
+          char *chuck;
+          char *p = bluetoothCmdChars;
+          // Serial.print("bluetoothCmd");
+          // Serial.println(bluetoothCmd);
+          // Serial.print("bluetoothCmdChars");
+          // Serial.println(bluetoothCmdChars);
+          while ((chuck = strtok_r(p, ",", &p)) != NULL)
           {
-            cmdArgs[argIdx] = atoi(chuck);
+            cmd[argIdx] = atoi(chuck);
             argIdx = argIdx + 1;
-            chuck = strtok(0, ",");
+            // Serial.print("chuck:");
+            // Serial.println(chuck);
           }
-          cmd = cmdArgs[0];
         }
-        else {
-          cmd = bluetoothCmd.toInt();
+        else
+        {
+          memset(cmd, 0, sizeof(cmd));
+          cmd[0] = bluetoothCmd.toInt();
         }
       }
       bluetoothCmd = ""; // Reset command after found '*'
