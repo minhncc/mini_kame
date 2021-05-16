@@ -81,7 +81,7 @@ void setup()
       state = !state;
     }
     analogWrite(LED_PIN, 0); // off calibarting indication LED
-    robot.loadTrim();
+    // robot.loadTrim();
   }
   //end:
 
