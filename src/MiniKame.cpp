@@ -362,9 +362,9 @@ void MiniKame::hello() {
   moveServos(150, sentado);
   pause(200);
 
-  int z_amp = 40;
-  int x_amp = 60;
-  int T = 350;
+  // int z_amp = 40;
+  // int x_amp = 60;
+  float T = 350;
   float period[] = {T, T, T, T, T, T, T, T};
   int amplitude[] = {0, 50, 0, 50, 0, 0, 0, 0};
   int offset[] = {
@@ -392,8 +392,8 @@ void MiniKame::jump() {
     90 + 10, 90 - 10, // back hip servos
     90 + 65, 90 - 65  // back leg servos
   };
-  int ap = 20;
-  int hi = 35;
+  float ap = 20;
+  float hi = 35;
   float salto[] = {90 + ap, 90 - ap, 90 - hi, 90 + hi, 90 - ap * 3, 90 + ap * 3, 90 + hi, 90 - hi};
 
   moveServos(150, sentado);
@@ -436,6 +436,7 @@ void MiniKame::execute(float steps, float period[8], int amplitude[8], int offse
     oscillator[i].setAmplitude(amplitude[i]);
     oscillator[i].setPhase(phase[i]);
     oscillator[i].setOffset(offset[i]);
+    oscillator[i].setCycles(steps);
     oscillator[i].start();
     oscillator[i].setTime(millis());
   }

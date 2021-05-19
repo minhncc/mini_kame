@@ -24,16 +24,16 @@ class MiniKame {
     void home();
     void rest();
     void leveling(int level = 90);
-    void run(int dir = 1, float steps = 1, float T = 1050); //default 550
-    void walk(int dir = 1, float steps = 1, float T = 1050); // default 550
-    void turnL(float steps = 1, float period = 550);
-    void turnR(float steps = 1, float period = 550);
+    void run(int dir = 1, float steps = 2, float T = 1000); //default 550
+    void walk(int dir = 1, float steps = 0, float T = 1000); // default 550
+    void turnL(float steps = 4, float period = 550);
+    void turnR(float steps = 4, float period = 550);
     void omniWalk(bool side = true, float T = 1000, float turn_factor = 1.5);
-    void moonwalkL(float steps = 1, float period = 2000);
-    void dance(float steps = 1, float period = 2000);
-    void upDown(float steps = 1, float period = 500);
-    void pushUp(float steps = 1, float period = 5000);
-    void frontBack(float steps = 1, float period = 2000);
+    void moonwalkL(float steps = 0, float period = 2000);
+    void dance(float steps = 0, float period = 2000);
+    void upDown(float steps = 0, float period = 500);
+    void pushUp(float steps = 0, float period = 5000);
+    void frontBack(float steps = 0, float period = 2000);
     void hello();
     void jump();
     void moveServos(int time, float target[8]);
