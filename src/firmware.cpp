@@ -4,7 +4,7 @@
 
 //uncomment out below line if you want to use HC_SR04 sensor
 //#define __HC_SR04__
-// #define __DEV__
+// #define __DEBUG__
 
 #ifdef __HC_SR04__
 #define HC_SR04_TRIGGER_PIN A4
@@ -133,17 +133,15 @@ boolean gaits(int *cmd)
   if (compareCmd(prev_cmd, cmd))
     return taken;
 
-#ifdef __HC_SR04__
+#ifdef __DEBUG__
   Serial.print("cmd:");
-  Serial.println(cmd);
-  Serial.print("cmdArgs:");
-  Serial.print(cmdArgs[0]);
+  Serial.print(cmd[0]);
   Serial.print(',');
-  Serial.print(cmdArgs[1]);
+  Serial.print(cmd[1]);
   Serial.print(',');
-  Serial.println(cmdArgs[2]);
+  Serial.println(cmd[2]);
   Serial.print("prev_cmd:");
-  Serial.println(prev_cmd);
+  Serial.println(prev_cmd[0]);
   Serial.println("Executing...");
 #endif
   // robot.init();
@@ -218,6 +216,7 @@ boolean gaits(int *cmd)
 
   if (taken)
     setCmd(prev_cmd, cmd);
+
   return taken;
 }
 
@@ -227,9 +226,14 @@ boolean checkBluetoothCommand()
   while (Serial.available() > 0)
   {
     bluetoothRead = Serial.read();
-    bluetoothCmd = bluetoothCmd + bluetoothRead; // Concat read to command
-    Serial.println("bluetoothCmd:" + bluetoothCmd);
-
+    // bluetoothCmd = bluetoothCmd + bluetoothRead; // Concat read to command
+    bluetoothCmd.concat(bluetoothRead); // Concat read to command
+#ifdef __DEBUG__
+    Serial.print("bluetoothRead:");
+    Serial.println(bluetoothRead);
+    Serial.print("bluetoothCmd:");
+    Serial.println(bluetoothCmd);
+#endif
     rc = true;
 
     // if (!auto_mode && bluetoothRead == '*')
@@ -246,10 +250,14 @@ boolean checkBluetoothCommand()
           int argIdx = 0;
           char *chuck;
           char *p = bluetoothCmdChars;
-          // Serial.print("bluetoothCmd");
-          // Serial.println(bluetoothCmd);
-          // Serial.print("bluetoothCmdChars");
-          // Serial.println(bluetoothCmdChars);
+
+#ifdef __DEBUG__
+          Serial.print("bluetoothCmd");
+          Serial.println(bluetoothCmd);
+          Serial.print("bluetoothCmdChars");
+          Serial.println(bluetoothCmdChars);
+#endif
+
           while ((chuck = strtok_r(p, ",", &p)) != NULL)
           {
             cmd[argIdx] = atoi(chuck);
