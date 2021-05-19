@@ -31,14 +31,22 @@ class Oscillator{
         float getOutput();
         float getPhaseProgress();
         unsigned long getTime();
+        void setCycles(float c) { _stop_at = c * (_amplitude) * 8; };
+        // void setStopAmplitude(int amplitude) { _stop_at_amplitude = amplitude; };
 
-    private:
+      private:
         int _period;
         int _amplitude;
         int _phase;
         int _offset;
         float _output;
+        float _prev_output;
+        bool _current_direction; // true: increasing, false: decreasing
         bool _stop;
+        float _stop_at = 0;
+        // int _stop_at_amplitude = NULL;
+        float _increase_amplitude = 0;
+        float _moved_amplitude = 0;
         unsigned long _ref_time = 0;
         float _delta_time = 0;
 };
